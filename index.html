@@ -1,0 +1,218 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>DinoKids 🦕 — Aprendendo com o Rex!</title>
+  <meta name="description" content="Sistema educacional gamificado para crianças de 4 anos aprenderem a usar o computador com o Dino Rex!">
+  <link rel="stylesheet" href="css/main.css">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=Nunito:wght@400;700;900&family=Fredoka+One&display=swap" rel="stylesheet">
+</head>
+<body>
+
+<!-- CURSOR PERSONALIZADO -->
+<div id="custom-cursor">🦶</div>
+
+<!-- HEADER (oculto em boas-vindas) -->
+<header id="header" style="display:none">
+  <div class="stars-bar">
+    <span>⭐</span>
+    <span class="stars-count" id="stars-display">0</span>
+  </div>
+  <div style="font-family:'Fredoka One';font-size:24px;color:#FFD600;text-shadow:2px 2px 0 #E65100;" id="header-player-name">DinoKids</div>
+  <div style="display:flex;gap:10px">
+    <button id="btn-sound" title="Som">🔊</button>
+    <button id="btn-home" title="Menu">🏠</button>
+  </div>
+</header>
+
+<!-- TOAST FEEDBACK -->
+<div id="toast"></div>
+
+<!-- TIMER DE SESSÃO -->
+<div id="session-timer">🕐 00:00</div>
+
+<!-- =================== TELA 1: BOAS-VINDAS =================== -->
+<div id="screen-welcome" class="screen active">
+  <div class="welcome-title">🦕 DinoKids</div>
+  <div class="welcome-subtitle">Aprenda com o Rex!</div>
+  <div class="rex-mascot" id="welcome-rex">🦕</div>
+  <div id="welcome-form" class="name-input-area">
+    <label>Qual é o seu nome?</label>
+    <input type="text" id="player-name-input" placeholder="Digite aqui..." maxlength="15" autocomplete="off">
+    <button class="btn-main" id="btn-start">Vamos lá! 🚀</button>
+  </div>
+  <div id="welcome-returning" style="display:none;flex-direction:column;align-items:center;gap:16px;">
+    <div class="speech-bubble" id="returning-greeting">Oi de novo!</div>
+    <button class="btn-main" id="btn-continue">Continuar Aventura! 🦕</button>
+    <button class="btn-main" id="btn-new-game" style="background:linear-gradient(135deg,#78909C,#546E7A);box-shadow:0 6px 0 #37474F">Novo Jogo</button>
+  </div>
+</div>
+
+<!-- =================== TELA 2: MAPA =================== -->
+<div id="screen-map" class="screen">
+  <div class="map-title">🗺️ Mapa das Aventuras</div>
+  <div class="islands-grid">
+    <div class="island">
+      <div class="island-btn" id="island-0" style="background:linear-gradient(135deg,#1565C0,#1E88E5)" data-module="0">
+        👋
+      </div>
+      <div class="island-label">Olá, Mundo!</div>
+      <div class="island-stars" id="stars-mod0">☆☆☆☆☆</div>
+    </div>
+    <div class="island">
+      <div class="island-btn locked" id="island-1" style="background:linear-gradient(135deg,#6A1B9A,#8E24AA)" data-module="1">
+        🖱️
+        <span class="lock-icon">🔒</span>
+      </div>
+      <div class="island-label">Movendo o Mouse</div>
+      <div class="island-stars" id="stars-mod1">☆☆☆☆☆</div>
+    </div>
+    <div class="island">
+      <div class="island-btn locked" id="island-2" style="background:linear-gradient(135deg,#BF360C,#E64A19)" data-module="2">
+        🎯
+        <span class="lock-icon">🔒</span>
+      </div>
+      <div class="island-label">Clique Certeiro</div>
+      <div class="island-stars" id="stars-mod2">☆☆☆☆☆</div>
+    </div>
+    <div class="island">
+      <div class="island-btn locked" id="island-3" style="background:linear-gradient(135deg,#4A148C,#7B1FA2)" data-module="3">
+        🧩
+        <span class="lock-icon">🔒</span>
+      </div>
+      <div class="island-label">Arrastar e Soltar</div>
+      <div class="island-stars" id="stars-mod3">☆☆☆☆☆</div>
+    </div>
+    <div class="island">
+      <div class="island-btn locked" id="island-4" style="background:linear-gradient(135deg,#006064,#00838F)" data-module="4">
+        🔢
+        <span class="lock-icon">🔒</span>
+      </div>
+      <div class="island-label">Sequência Lógica</div>
+      <div class="island-stars" id="stars-mod4">☆☆☆☆☆</div>
+    </div>
+    <div class="island">
+      <div class="island-btn locked" id="island-5" style="background:linear-gradient(135deg,#37474F,#546E7A)" data-module="5">
+        ⌨️
+        <span class="lock-icon">🔒</span>
+      </div>
+      <div class="island-label">Teclado Mágico</div>
+      <div class="island-stars" id="stars-mod5">☆☆☆☆☆</div>
+    </div>
+    <div class="island">
+      <div class="island-btn locked" id="island-6" style="background:linear-gradient(135deg,#E65100,#FF6F00)" data-module="6">
+        🎨
+        <span class="lock-icon">🔒</span>
+      </div>
+      <div class="island-label">Mundo Criativo</div>
+      <div class="island-stars" id="stars-mod6">☆☆☆☆☆</div>
+    </div>
+    <div class="island">
+      <div class="island-btn locked" id="island-bonus" style="background:linear-gradient(135deg,#1A237E,#283593)" data-module="bonus">
+        🚀
+        <span class="lock-icon">🔒</span>
+      </div>
+      <div class="island-label">Espaço Bônus!</div>
+      <div class="island-stars" id="stars-bonus">☆☆☆☆☆</div>
+    </div>
+  </div>
+</div>
+
+<!-- =================== MÓDULO 0: OLÁ, MUNDO! =================== -->
+<div id="screen-mod0" class="screen">
+  <div class="speech-bubble" id="mod0-speech">Oi! Eu sou o Rex! Clique em mim! 👆</div>
+  <div class="mod0-rex" id="mod0-rex">🦕</div>
+  <div class="click-counter" id="mod0-counter">⭐ Cliques: 0 / 5</div>
+  <div id="mod0-stars-reward" style="display:none;margin-top:16px;">
+    <button class="btn-main" id="mod0-next">Próxima Fase! →</button>
+  </div>
+</div>
+
+<!-- =================== MÓDULO 1: MOUSE =================== -->
+<div id="screen-mod1" class="screen">
+  <div class="speech-bubble" style="position:absolute;top:90px">Siga o Rex com o mouse! 🖱️</div>
+  <canvas id="canvas-mod1"></canvas>
+  <div class="click-counter" id="mod1-counter" style="position:absolute;bottom:20px;">⭐ Toques: 0 / 10</div>
+</div>
+
+<!-- =================== MÓDULO 2: CLIQUE CERTEIRO =================== -->
+<div id="screen-mod2" class="screen">
+  <div class="speech-bubble" style="position:absolute;top:90px" id="mod2-speech">🥚 Acorde os ovos! Clique neles!</div>
+  <div class="eggs-area" id="eggs-area"></div>
+  <div class="click-counter" id="mod2-counter" style="position:absolute;bottom:20px;">⭐ Acertos: 0 / 10</div>
+</div>
+
+<!-- =================== MÓDULO 3: DRAG & DROP =================== -->
+<div id="screen-mod3" class="screen">
+  <div class="speech-bubble" style="position:absolute;top:90px" id="mod3-speech">🧩 Monte o Dinossauro!</div>
+  <div id="puzzle-area">
+    <div class="pieces-tray" id="pieces-tray"></div>
+    <div style="font-size:48px;color:rgba(255,255,255,0.5);">→</div>
+    <div class="puzzle-silhouette" id="puzzle-board"></div>
+  </div>
+  <div class="click-counter" id="mod3-counter" style="position:absolute;bottom:20px;">🧩 Puzzles: 0 / 3</div>
+</div>
+
+<!-- =================== MÓDULO 4: SEQUÊNCIA =================== -->
+<div id="screen-mod4" class="screen">
+  <div class="speech-bubble" style="position:absolute;top:90px" id="mod4-speech">🍖 Coloque na ordem certa!</div>
+  <div class="sequence-area" id="sequence-area">
+    <div id="mod4-example" class="sequence-row"></div>
+    <div style="font-size:32px;color:rgba(255,255,255,0.7);">↕️ Reorganize:</div>
+    <div id="mod4-player" class="sequence-row"></div>
+    <button class="btn-main" id="btn-check-seq" style="margin-top:10px;">✅ Verificar!</button>
+  </div>
+  <div class="click-counter" id="mod4-counter" style="position:absolute;bottom:20px;">🔢 Sequências: 0 / 5</div>
+</div>
+
+<!-- =================== MÓDULO 5: TECLADO =================== -->
+<div id="screen-mod5" class="screen">
+  <div class="speech-bubble" style="position:absolute;top:90px">⌨️ Aperte a tecla que aparece!</div>
+  <div class="key-display" id="key-display">?</div>
+  <div style="font-size:28px;color:rgba(255,255,255,0.8);margin-top:20px;" id="mod5-hint">Procure no teclado!</div>
+  <div class="click-counter" id="mod5-counter" style="position:absolute;bottom:20px;">⌨️ Acertos: 0 / 10</div>
+</div>
+
+<!-- =================== MÓDULO 6: CRIATIVO =================== -->
+<div id="screen-mod6" class="screen">
+  <div class="speech-bubble" style="position:absolute;top:90px">🎨 Pinte o Rex!</div>
+  <div style="display:flex;gap:20px;align-items:center;flex-wrap:wrap;justify-content:center;padding-top:80px;">
+    <canvas id="canvas-paint" width="350" height="350" style="border-radius:20px;box-shadow:0 8px 30px rgba(0,0,0,0.4);background:white;cursor:none;"></canvas>
+    <div style="display:flex;flex-direction:column;gap:10px;">
+      <div style="font-size:20px;font-weight:800;color:white;text-shadow:1px 1px 3px rgba(0,0,0,0.5);">Escolha a cor:</div>
+      <div id="color-palette" style="display:grid;grid-template-columns:repeat(2,1fr);gap:8px;"></div>
+      <button class="btn-main" id="btn-clear-paint" style="margin-top:10px;font-size:18px;padding:12px 20px;">🗑️ Apagar</button>
+      <button class="btn-main" id="btn-done-paint" style="font-size:18px;padding:12px 20px;background:linear-gradient(135deg,#4CAF50,#2E7D32);box-shadow:0 4px 0 #1B5E20;">✅ Pronto!</button>
+    </div>
+  </div>
+</div>
+
+<!-- =================== TELA DE RECOMPENSA =================== -->
+<div id="screen-reward" class="screen">
+  <div class="reward-rex" id="reward-rex">🦕</div>
+  <div class="reward-title" id="reward-title">Incrível! 🎉</div>
+  <div class="reward-stars" id="reward-stars">⭐⭐⭐</div>
+  <div style="font-size:22px;color:rgba(255,255,255,0.9);margin:16px 0;font-weight:700;" id="reward-msg">Você completou a fase!</div>
+  <div style="display:flex;gap:16px;margin-top:16px;flex-wrap:wrap;justify-content:center;">
+    <button class="btn-main" id="btn-reward-map">🗺️ Mapa</button>
+    <button class="btn-main" id="btn-reward-next" style="background:linear-gradient(135deg,#4CAF50,#2E7D32);box-shadow:0 6px 0 #1B5E20;">Próxima! →</button>
+  </div>
+</div>
+
+<!-- =================== PAINEL DO PAI =================== -->
+<div id="screen-parent" class="screen">
+  <div class="parent-panel">
+    <h2>📊 Painel dos Pais</h2>
+    <div id="parent-content"></div>
+    <button class="btn-main" id="btn-close-parent" style="width:100%;margin-top:20px;background:linear-gradient(135deg,#EF5350,#C62828);box-shadow:0 4px 0 #B71C1C;">✕ Fechar</button>
+  </div>
+</div>
+
+<!-- SCRIPTS -->
+<script src="js/progress.js"></script>
+<script src="js/audio.js"></script>
+<script src="js/game.js"></script>
+</body>
+</html>
