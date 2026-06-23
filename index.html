@@ -117,6 +117,22 @@
       <div class="island-label">Espaço Bônus!</div>
       <div class="island-stars" id="stars-bonus">☆☆☆☆☆</div>
     </div>
+    <div class="island">
+      <div class="island-btn locked" id="island-7" style="background:linear-gradient(135deg,#AD1457,#E91E63)" data-module="7">
+        🧠
+        <span class="lock-icon">🔒</span>
+      </div>
+      <div class="island-label">Memória do Rex</div>
+      <div class="island-stars" id="stars-mod7">☆☆☆☆☆</div>
+    </div>
+    <div class="island">
+      <div class="island-btn locked" id="island-8" style="background:linear-gradient(135deg,#33691E,#558B2F)" data-module="8">
+        🌿
+        <span class="lock-icon">🔒</span>
+      </div>
+      <div class="island-label">Labirinto Dino</div>
+      <div class="island-stars" id="stars-mod8">☆☆☆☆☆</div>
+    </div>
   </div>
 </div>
 
@@ -189,7 +205,31 @@
   </div>
 </div>
 
-<!-- =================== TELA DE RECOMPENSA =================== -->
+<!-- =================== MÓDULO 7: MEMÓRIA =================== -->
+<div id="screen-mod7" class="screen">
+  <div class="speech-bubble" style="position:absolute;top:90px" id="mod7-speech">🧠 Encontre os pares iguais!</div>
+  <div class="memory-grid" id="memory-grid"></div>
+  <div class="click-counter" id="mod7-counter" style="position:absolute;bottom:20px;">🧠 Pares: 0 / 6</div>
+</div>
+
+<!-- =================== MÓDULO 8: LABIRINTO =================== -->
+<div id="screen-mod8" class="screen">
+  <div class="speech-bubble" style="position:absolute;top:90px">🌿 Leve o Rex até a comida!</div>
+  <div id="maze-container">
+    <div id="maze-grid"></div>
+  </div>
+  <div id="maze-arrows">
+    <div></div>
+    <button class="maze-btn" id="maze-up">▲</button>
+    <div></div>
+    <button class="maze-btn" id="maze-left">◀</button>
+    <button class="maze-btn" id="maze-down">▼</button>
+    <button class="maze-btn" id="maze-right">▶</button>
+  </div>
+  <div class="click-counter" id="mod8-counter" style="position:absolute;bottom:20px;">🌿 Fases: 0 / 3</div>
+</div>
+
+
 <div id="screen-reward" class="screen">
   <div class="reward-rex" id="reward-rex">🦕</div>
   <div class="reward-title" id="reward-title">Incrível! 🎉</div>
@@ -211,6 +251,40 @@
 </div>
 
 <!-- SCRIPTS -->
+<!-- TWEMOJI PARA WINDOWS 7 -->
+<script src="js/twemoji.min.js"></script>
+<script>
+  window.addEventListener('load', () => {
+    const twemojiOpts = { folder: 'svg', ext: '.svg', base: 'assets/' };
+
+    // Converte apenas nós que ainda não foram processados
+    function safeParse(node) {
+      if (!node || node.nodeType !== 1) return;
+      // Se já contém img.emoji, não reprocesar
+      if (node.querySelector && node.querySelector('img.emoji')) return;
+      twemoji.parse(node, twemojiOpts);
+    }
+
+    // Parse inicial do corpo todo
+    twemoji.parse(document.body, twemojiOpts);
+
+    let parsing = false;
+    const observer = new MutationObserver((mutations) => {
+      if (parsing) return;
+      parsing = true;
+      mutations.forEach((m) => {
+        if (m.type === 'childList') {
+          m.addedNodes.forEach(n => safeParse(n));
+        }
+        // characterData removido — evita re-disparo pelo timer
+      });
+      parsing = false;
+    });
+
+    // Observar apenas adição de filhos, SEM characterData
+    observer.observe(document.body, { childList: true, subtree: true });
+  });
+</script>
 <script src="js/progress.js"></script>
 <script src="js/audio.js"></script>
 <script src="js/game.js"></script>

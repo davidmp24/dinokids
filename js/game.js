@@ -10,6 +10,10 @@ let sessionStartTime = Date.now();
 let timerInterval = null;
 let clickDebounceTime = 0;
 
+// Twemoji imagem para Canvas
+const canvasDinoImg = new Image();
+canvasDinoImg.src = 'assets/svg/1f995.svg';
+
 // --- UTILS ---
 const $ = id => document.getElementById(id);
 const q = sel => document.querySelector(sel);
@@ -148,6 +152,8 @@ function loadModule(modId) {
   else if (modId == '4') initMod4();
   else if (modId == '5') initMod5();
   else if (modId == '6') initMod6();
+  else if (modId == '7') initMod7();
+  else if (modId == '8') initMod8();
   else showToast('Módulo em desenvolvimento!');
 }
 
@@ -162,7 +168,7 @@ function completeCurrentModule(starsEarned = 5) {
     $('btn-reward-map').onclick = () => initMap();
     $('btn-reward-next').onclick = () => {
       let nextId = parseInt(currentModule) + 1;
-      if (nextId <= 6 && Progress.data.modules[nextId].unlocked) loadModule(nextId.toString());
+      if (nextId <= 8 && Progress.data.modules[nextId] && Progress.data.modules[nextId].unlocked) loadModule(nextId.toString());
       else initMap();
     };
   }, 1000);
@@ -224,10 +230,14 @@ function initMod1() {
     ctx.beginPath();
     ctx.arc(target.x, target.y, target.radius, 0, Math.PI * 2);
     ctx.fill();
-    ctx.font = '40px sans-serif';
-    ctx.textAlign = 'center';
-    ctx.textBaseline = 'middle';
-    ctx.fillText('🦕', target.x, target.y);
+    if (canvasDinoImg.complete && canvasDinoImg.naturalWidth !== 0) {
+      ctx.drawImage(canvasDinoImg, target.x - 25, target.y - 25, 50, 50);
+    } else {
+      ctx.font = '40px sans-serif';
+      ctx.textAlign = 'center';
+      ctx.textBaseline = 'middle';
+      ctx.fillText('🦕', target.x, target.y);
+    }
     animId = requestAnimationFrame(draw);
   }
   
@@ -375,79 +385,66 @@ function initMod3() {
   loadPuzzle(0);
 }
 
-// --- MÓDULO 4: SEQUÊNCIA ---
+// --- MÓDULO 4: SEQUÊNCIA (simplificado — "Qual vem depois?") ---
 function initMod4() {
   const example = $('mod4-example');
-  const player = $('mod4-player');
+  const player  = $('mod4-player');
   let score = 0;
   $('mod4-counter').innerText = `🔢 Sequências: ${score} / 5`;
 
+  // Cada round: mostrar 2 itens da sequência e perguntar qual é o 3º
   const seqs = [
-    ['🥩', '🌿', '🥩'],
-    ['🥚', '🦕', '🦖'],
-    ['🌱', '🌳', '🍎'],
-    ['🚜', '🐄', '🥛'],
-    ['☀️', '🌧️', '🌈']
+    { shown: ['🌱', '🌳'], answer: '🍎', wrong: ['🚜', '🐄'] },
+    { shown: ['🥚', '🦕'], answer: '🦖', wrong: ['🐄', '🌾'] },
+    { shown: ['☀️', '🌧️'], answer: '🌈', wrong: ['🌙', '❄️'] },
+    { shown: ['🌱', '🌿'], answer: '🌳', wrong: ['🐛', '🦀'] },
+    { shown: ['🥚', '🐣'], answer: '🐔', wrong: ['🐶', '🐟'] }
   ];
 
   function loadSeq(idx) {
-    if(idx >= seqs.length) return completeCurrentModule(5);
-    const target = seqs[idx];
+    if (idx >= seqs.length) return completeCurrentModule(5);
+    const round = seqs[idx];
     example.innerHTML = '';
     player.innerHTML = '';
 
-    // Show example
-    target.forEach(icon => {
+    // Mostrar os 2 itens conhecidos
+    round.shown.forEach(icon => {
       const card = document.createElement('div');
       card.className = 'seq-card';
       card.innerText = icon;
       example.appendChild(card);
     });
+    // Mostrar "?" como último
+    const q = document.createElement('div');
+    q.className = 'seq-card seq-question';
+    q.innerText = '?';
+    example.appendChild(q);
 
-    // Player area with dragged logic
-    const shuffled = [...target].sort(() => Math.random() - 0.5);
-    let dragged = null;
-
-    shuffled.forEach(icon => {
-      const card = document.createElement('div');
-      card.className = 'seq-card';
-      card.innerText = icon;
-      card.draggable = true;
-      card.ondragstart = () => { dragged = card; Audio.hover(); };
-      card.ondragover = e => e.preventDefault();
-      card.ondrop = e => {
-        e.preventDefault();
-        if(dragged && dragged !== card) {
-          const parent = player;
-          const all = Array.from(parent.children);
-          const draggedIdx = all.indexOf(dragged);
-          const dropIdx = all.indexOf(card);
-          
-          if (draggedIdx < dropIdx) card.after(dragged);
-          else card.before(dragged);
-          Audio.snap();
+    // Montar opções de escolha: resposta certa + 2 erradas
+    const options = [round.answer, ...round.wrong].sort(() => Math.random() - 0.5);
+    options.forEach(icon => {
+      const btn = document.createElement('div');
+      btn.className = 'seq-card seq-option';
+      btn.innerText = icon;
+      btn.onclick = () => {
+        if (icon === round.answer) {
+          Audio.success();
+          btn.classList.add('correct');
+          score++;
+          $('mod4-counter').innerText = `🔢 Sequências: ${score} / 5`;
+          setTimeout(() => loadSeq(idx + 1), 900);
+        } else {
+          Audio.error();
+          btn.classList.add('wrong');
+          setTimeout(() => btn.classList.remove('wrong'), 500);
         }
       };
-      player.appendChild(card);
+      player.appendChild(btn);
     });
 
-    $('btn-check-seq').onclick = () => {
-      if (!debounceClick()) return;
-      const current = Array.from(player.children).map(c => c.innerText);
-      if (current.join('') === target.join('')) {
-        Audio.success();
-        score++;
-        $('mod4-counter').innerText = `🔢 Sequências: ${score} / 5`;
-        Array.from(player.children).forEach(c => c.classList.add('correct'));
-        setTimeout(() => loadSeq(idx + 1), 1000);
-      } else {
-        Audio.error();
-        Array.from(player.children).forEach(c => c.classList.add('wrong'));
-        setTimeout(() => {
-          Array.from(player.children).forEach(c => c.classList.remove('wrong'));
-        }, 500);
-      }
-    };
+    // Esconder botão de verificar (não usado mais)
+    const checkBtn = $('btn-check-seq');
+    if (checkBtn) checkBtn.style.display = 'none';
   }
 
   loadSeq(0);
@@ -511,10 +508,14 @@ function initMod6() {
   ctx.beginPath();
   ctx.arc(175, 175, 80, 0, Math.PI * 2);
   ctx.stroke();
-  ctx.font = '60px sans-serif';
-  ctx.textAlign = 'center';
-  ctx.textBaseline = 'middle';
-  ctx.fillText('🦕', 175, 175);
+  if (canvasDinoImg.complete && canvasDinoImg.naturalWidth !== 0) {
+    ctx.drawImage(canvasDinoImg, 175 - 40, 175 - 40, 80, 80);
+  } else {
+    ctx.font = '60px sans-serif';
+    ctx.textAlign = 'center';
+    ctx.textBaseline = 'middle';
+    ctx.fillText('🦕', 175, 175);
+  }
 
   let painting = false;
   let currentColor = '#FF0000';
@@ -562,11 +563,164 @@ function initMod6() {
     ctx.beginPath();
     ctx.arc(175, 175, 80, 0, Math.PI * 2);
     ctx.stroke();
-    ctx.fillText('🦕', 175, 175);
+    if (canvasDinoImg.complete && canvasDinoImg.naturalWidth !== 0) {
+      ctx.drawImage(canvasDinoImg, 175 - 40, 175 - 40, 80, 80);
+    } else {
+      ctx.font = '60px sans-serif';
+      ctx.textAlign = 'center';
+      ctx.textBaseline = 'middle';
+      ctx.fillText('🦕', 175, 175);
+    }
   };
 
   $('btn-done-paint').onclick = () => {
     if (!debounceClick()) return;
     completeCurrentModule(5);
   };
+}
+
+// --- MÓDULO 7: JOGO DA MEMÓRIA ---
+function initMod7() {
+  const grid = $('memory-grid');
+  grid.innerHTML = '';
+  let pairs = 0;
+  let flipped = [];
+  let locked = false;
+  $('mod7-counter').innerText = `🧠 Pares: ${pairs} / 6`;
+
+  const animals = ['🦕', '🦖', '🐄', '🐘', '🐣', '🦎'];
+  // Duplicar e embaralhar
+  const cards = [...animals, ...animals].sort(() => Math.random() - 0.5);
+
+  cards.forEach(icon => {
+    const card = document.createElement('div');
+    card.className = 'memory-card';
+    card.dataset.icon = icon;
+
+    const front = document.createElement('div');
+    front.className = 'memory-front';
+    front.innerText = '?';
+
+    const back = document.createElement('div');
+    back.className = 'memory-back';
+    back.innerText = icon;
+
+    card.appendChild(front);
+    card.appendChild(back);
+    grid.appendChild(card);
+
+    card.onclick = () => {
+      if (locked || card.classList.contains('revealed') || card.classList.contains('matched')) return;
+      Audio.click();
+      card.classList.add('revealed');
+      flipped.push(card);
+
+      if (flipped.length === 2) {
+        locked = true;
+        const [a, b] = flipped;
+        if (a.dataset.icon === b.dataset.icon) {
+          Audio.snap();
+          a.classList.add('matched');
+          b.classList.add('matched');
+          pairs++;
+          $('mod7-counter').innerText = `🧠 Pares: ${pairs} / 6`;
+          flipped = [];
+          locked = false;
+          if (pairs >= 6) {
+            Audio.success();
+            setTimeout(() => completeCurrentModule(5), 800);
+          }
+        } else {
+          Audio.error();
+          setTimeout(() => {
+            a.classList.remove('revealed');
+            b.classList.remove('revealed');
+            flipped = [];
+            locked = false;
+          }, 900);
+        }
+      }
+    };
+  });
+}
+
+// --- MÓDULO 8: LABIRINTO ---
+function initMod8() {
+  let level = 0;
+  let score = 0;
+  $('mod8-counter').innerText = `🌿 Fases: ${score} / 3`;
+
+  // Cada mapa: 0=vazio, 1=parede, S=início, E=saída
+  const levels = [
+    { rows: 5, cols: 5, walls: [[0,1],[1,1],[1,3],[2,1],[2,3],[3,1],[3,3],[4,3]], start:[0,0], end:[4,4] },
+    { rows: 6, cols: 6, walls: [[0,2],[1,0],[1,2],[1,4],[2,2],[2,4],[3,0],[3,2],[4,0],[4,2],[4,4]], start:[0,0], end:[5,5] },
+    { rows: 7, cols: 7, walls: [[0,3],[1,1],[1,3],[1,5],[2,1],[2,3],[2,5],[3,1],[3,3],[3,5],[4,1],[4,3],[5,1],[5,3],[5,5]], start:[0,0], end:[6,6] }
+  ];
+
+  function startLevel(idx) {
+    if (idx >= levels.length) return completeCurrentModule(5);
+    const lv = levels[idx];
+    const mazeGrid = $('maze-grid');
+    mazeGrid.innerHTML = '';
+    mazeGrid.style.gridTemplateColumns = `repeat(${lv.cols}, 1fr)`;
+    mazeGrid.style.gridTemplateRows = `repeat(${lv.rows}, 1fr)`;
+
+    let playerPos = [...lv.start];
+
+    const cells = [];
+    for (let r = 0; r < lv.rows; r++) {
+      cells[r] = [];
+      for (let c = 0; c < lv.cols; c++) {
+        const cell = document.createElement('div');
+        cell.className = 'maze-cell';
+        const isWall = lv.walls.some(w => w[0] === r && w[1] === c);
+        if (isWall) cell.classList.add('maze-wall');
+        if (r === lv.end[0] && c === lv.end[1]) cell.classList.add('maze-exit');
+        cells[r][c] = cell;
+        mazeGrid.appendChild(cell);
+      }
+    }
+
+    function render() {
+      for (let r = 0; r < lv.rows; r++)
+        for (let c = 0; c < lv.cols; c++)
+          cells[r][c].innerText = '';
+      cells[playerPos[0]][playerPos[1]].innerText = '🦕';
+    }
+
+    function tryMove(dr, dc) {
+      const nr = playerPos[0] + dr;
+      const nc = playerPos[1] + dc;
+      if (nr < 0 || nr >= lv.rows || nc < 0 || nc >= lv.cols) return;
+      if (cells[nr][nc].classList.contains('maze-wall')) { Audio.error(); return; }
+      Audio.click();
+      playerPos = [nr, nc];
+      render();
+      if (nr === lv.end[0] && nc === lv.end[1]) {
+        Audio.success();
+        score++;
+        $('mod8-counter').innerText = `🌿 Fases: ${score} / 3`;
+        document.onkeydown = null;
+        setTimeout(() => startLevel(idx + 1), 800);
+      }
+    }
+
+    // Botões na tela
+    $('maze-up').onclick    = () => tryMove(-1,  0);
+    $('maze-down').onclick  = () => tryMove( 1,  0);
+    $('maze-left').onclick  = () => tryMove( 0, -1);
+    $('maze-right').onclick = () => tryMove( 0,  1);
+
+    // Teclado também funciona
+    document.onkeydown = (e) => {
+      if (e.key === 'ArrowUp'    || e.key === 'w') tryMove(-1,  0);
+      if (e.key === 'ArrowDown'  || e.key === 's') tryMove( 1,  0);
+      if (e.key === 'ArrowLeft'  || e.key === 'a') tryMove( 0, -1);
+      if (e.key === 'ArrowRight' || e.key === 'd') tryMove( 0,  1);
+    };
+
+    render();
+  }
+
+  startLevel(0);
 }

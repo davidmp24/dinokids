@@ -48,11 +48,13 @@ body { cursor: none; }
   justify-content: center;
   opacity: 0;
   pointer-events: none;
-  transition: opacity 0.5s ease;
+  visibility: hidden;
+  transition: opacity 0.5s ease, visibility 0.5s ease;
 }
 .screen.active {
   opacity: 1;
   pointer-events: all;
+  visibility: visible;
 }
 
 /* HEADER */
@@ -163,7 +165,7 @@ body { cursor: none; }
   letter-spacing: 1px;
 }
 .btn-main:hover {
-  transform: translateY(-4px);
+  transform: scale(1.05);
   box-shadow: 0 10px 0 #E65100, 0 12px 25px rgba(0,0,0,0.3);
 }
 .btn-main:active {
@@ -185,10 +187,10 @@ body { cursor: none; }
 }
 .islands-grid {
   display: grid;
-  grid-template-columns: repeat(4, 1fr);
-  gap: 20px;
-  padding: 20px;
-  max-width: 900px;
+  grid-template-columns: repeat(5, 1fr);
+  gap: 16px;
+  padding: 16px;
+  max-width: 1000px;
   width: 100%;
 }
 .island {
@@ -208,9 +210,12 @@ body { cursor: none; }
   transition: transform 0.2s, box-shadow 0.2s;
   position: relative;
   box-shadow: 0 8px 20px rgba(0,0,0,0.3);
+  backface-visibility: hidden;
+  transform: translateZ(0);
+  -webkit-backface-visibility: hidden;
 }
-.island-btn:not(.locked):hover {
-  transform: scale(1.12) translateY(-6px);
+.island:hover .island-btn:not(.locked) {
+  transform: scale(1.12) translateZ(0);
   box-shadow: 0 16px 30px rgba(0,0,0,0.4);
 }
 .island-btn.locked {
@@ -376,7 +381,7 @@ body { cursor: none; }
   transition: transform 0.2s, box-shadow 0.2s;
   box-shadow: 0 6px 15px rgba(0,0,0,0.3);
 }
-.puzzle-piece:hover { transform: scale(1.08) translateY(-4px); box-shadow: 0 12px 25px rgba(0,0,0,0.4); }
+.puzzle-piece:hover { transform: scale(1.08); box-shadow: 0 12px 25px rgba(0,0,0,0.4); }
 .puzzle-piece.dragging { opacity: 0.5; transform: scale(1.1); }
 
 /* MÓDULO 4 — SEQUÊNCIA */
@@ -387,19 +392,13 @@ body { cursor: none; }
 .sequence-row {
   display: flex; gap: 16px; align-items:center;
 }
-.seq-card {
-  width: 120px; height: 120px;
-  border-radius: 20px;
-  background: rgba(255,255,255,0.2);
-  border: 3px solid rgba(255,255,255,0.5);
-  display: flex; align-items:center; justify-content:center;
-  font-size: 60px;
-  cursor: none;
-  transition: transform 0.2s;
-}
-.seq-card:hover { transform: scale(1.1); }
-.seq-card.correct { background: rgba(76,175,80,0.5); border-color: #4CAF50; }
-.seq-card.wrong   { background: rgba(239,83,80,0.4); border-color: #EF5350; animation: shake 0.4s ease; }
+.seq-card { width:110px; height:110px; border-radius:20px; background:rgba(255,255,255,0.2); border:3px solid rgba(255,255,255,0.5); display:flex; align-items:center; justify-content:center; font-size:55px; cursor:none; transition:transform 0.2s; }
+.seq-card:hover { transform:scale(1.1); }
+.seq-card.correct { background:rgba(76,175,80,0.5); border-color:#4CAF50; }
+.seq-card.wrong   { background:rgba(239,83,80,0.4); border-color:#EF5350; animation:shake 0.4s ease; }
+.seq-question { background:rgba(255,214,0,0.25); border-color:#FFD600; color:#FFD600; font-size:64px; font-weight:900; }
+.seq-option { cursor:none; transition:transform 0.2s, background 0.2s; }
+.seq-option:hover { transform:scale(1.12); background:rgba(255,255,255,0.35); }
 @keyframes shake {
   0%,100%{transform:translateX(0)} 25%{transform:translateX(-10px)} 75%{transform:translateX(10px)}
 }
@@ -512,9 +511,125 @@ body { cursor: none; }
 
 /* RESPONSIVE */
 @media (max-width: 768px) {
-  .islands-grid { grid-template-columns: repeat(2,1fr); }
+  .islands-grid { grid-template-columns: repeat(3,1fr); }
   .island-btn { width:100px; height:100px; font-size:44px; }
 }
 @media (max-width: 500px) {
   .islands-grid { grid-template-columns: repeat(2,1fr); gap:12px; }
 }
+
+/* MÓDULO 7 — JOGO DA MEMÓRIA */
+#screen-mod7 { background: linear-gradient(160deg, #880E4F 0%, #AD1457 50%, #E91E63 100%); }
+.memory-grid {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 12px;
+  padding: 16px;
+  margin-top: 80px;
+}
+.memory-card {
+  width: 110px; height: 110px;
+  border-radius: 16px;
+  position: relative;
+  cursor: none;
+  perspective: 600px;
+}
+.memory-front, .memory-back {
+  position: absolute; inset: 0;
+  border-radius: 16px;
+  display: flex; align-items:center; justify-content:center;
+  font-size: 56px;
+  font-weight: 900;
+  backface-visibility: hidden;
+  -webkit-backface-visibility: hidden;
+  transition: transform 0.4s ease;
+}
+.memory-front {
+  background: linear-gradient(135deg, #CE93D8, #9C27B0);
+  border: 3px solid rgba(255,255,255,0.4);
+  color: white;
+  transform: rotateY(0deg);
+}
+.memory-back {
+  background: rgba(255,255,255,0.95);
+  border: 3px solid #E91E63;
+  transform: rotateY(180deg);
+}
+.memory-card.revealed .memory-front { transform: rotateY(-180deg); }
+.memory-card.revealed .memory-back  { transform: rotateY(0deg); }
+.memory-card.matched .memory-front  { transform: rotateY(-180deg); }
+.memory-card.matched .memory-back   { transform: rotateY(0deg); background: rgba(76,175,80,0.3); border-color: #4CAF50; }
+
+/* MÓDULO 8 — LABIRINTO */
+#screen-mod8 { background: linear-gradient(160deg, #1B5E20 0%, #33691E 50%, #558B2F 100%); }
+#maze-container {
+  margin-top: 80px;
+  background: rgba(0,0,0,0.3);
+  border-radius: 16px;
+  padding: 12px;
+  border: 3px solid rgba(255,255,255,0.2);
+}
+#maze-grid {
+  display: grid;
+  gap: 4px;
+}
+.maze-cell {
+  width: 56px; height: 56px;
+  border-radius: 8px;
+  background: rgba(255,255,255,0.1);
+  display: flex; align-items:center; justify-content:center;
+  font-size: 32px;
+  transition: background 0.15s;
+}
+.maze-wall {
+  background: rgba(0,0,0,0.6);
+  border-radius: 8px;
+  box-shadow: inset 0 2px 6px rgba(0,0,0,0.5);
+}
+.maze-exit {
+  background: rgba(255,214,0,0.35);
+  border: 2px dashed #FFD600;
+  animation: exitPulse 1s ease-in-out infinite alternate;
+}
+.maze-exit::after {
+  content: '🥩';
+  font-size: 30px;
+}
+@keyframes exitPulse {
+  from { box-shadow: 0 0 8px rgba(255,214,0,0.4); }
+  to   { box-shadow: 0 0 20px rgba(255,214,0,0.9); }
+}
+#maze-arrows {
+  display: grid;
+  grid-template-columns: repeat(3, 64px);
+  grid-template-rows: repeat(2, 64px);
+  gap: 8px;
+  margin-top: 16px;
+  justify-content: center;
+}
+.maze-btn {
+  width: 64px; height: 64px;
+  border-radius: 16px;
+  border: none;
+  background: rgba(255,255,255,0.25);
+  color: white;
+  font-size: 28px;
+  cursor: none;
+  transition: transform 0.15s, background 0.15s;
+  display: flex; align-items:center; justify-content:center;
+}
+.maze-btn:hover { background: rgba(255,255,255,0.4); transform: scale(1.1); }
+.maze-btn:active { transform: scale(0.9); }
+
+/* TWEMOJI STYLE PARA FIX BUG EM WIN7 */
+img.emoji {
+  height: 1em;
+  width: 1em;
+  margin: 0 .05em 0 .1em;
+  vertical-align: -0.1em;
+  pointer-events: none;
+  backface-visibility: hidden;
+  transform: translateZ(0);
+  -webkit-backface-visibility: hidden;
+}
+

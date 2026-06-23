@@ -18,6 +18,8 @@ const defaultProgress = () => ({
     4: { unlocked: false, completed: false, stars: 0 },
     5: { unlocked: false, completed: false, stars: 0 },
     6: { unlocked: false, completed: false, stars: 0 },
+    7: { unlocked: false, completed: false, stars: 0 },
+    8: { unlocked: false, completed: false, stars: 0 },
     bonus: { unlocked: false, completed: false, stars: 0 }
   },
   settings: { volume: 0.7, muted: false }
@@ -65,8 +67,8 @@ const Progress = {
     if (this.data.modules[next] !== undefined) {
       this.data.modules[next].unlocked = true;
     }
-    // Desbloquear bônus após módulo 5
-    if (moduleId === 5) {
+    // Desbloquear bônus após módulo 8
+    if (moduleId === 8) {
       this.data.modules['bonus'].unlocked = true;
     }
     this.save();
